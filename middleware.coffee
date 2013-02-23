@@ -86,7 +86,7 @@ module.exports = (opts, coffee) ->
                   @log '(re)compile complete'
                   cb()
               if not err and stat.isDirectory() then save()
-              else file.mkdir path, 0666, save
+              else file.mkdir path, 0o666, save
           
           # Continue on errors.
           catch err
