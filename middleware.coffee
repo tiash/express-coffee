@@ -98,8 +98,12 @@ module.exports = (opts, coffee) ->
   (req, res, next) ->
     # Ignore URLs that don't start in /javascripts and end in .js.
     if not (/^\/javascripts/.test(req.url) and /\.js$/.test(req.url))
-       return next()
+      return next()
 
     # Run the compiler.
-    compiler = new Compiler opts.path + req.url
-    compiler.needsCompile (needs) -> if needs then compiler.compile next else next()
+    compiler = new Compiler(opts.path + req.url)
+    compiler.needsCompile (needs) ->
+      if needs
+        compiler.compile next
+      else
+        next()
