@@ -50,7 +50,7 @@ module.exports = (opts, coffee) ->
           stats[type] = stat
           chain.next()
       
-      # Fetch file info.
+      # Fetch file info.s
       chain.add => file.stat @jpath, typeHandler 'js'
       chain.add => file.stat @cpath, typeHandler 'coffee'
 
@@ -69,30 +69,33 @@ module.exports = (opts, coffee) ->
         if err then cb()
         else
           try
-            # Attempt to compile to Javascript.
-            txt = coffee.compile cdata.toString()
-
-            # Ugligfy, if enabled.
-            if opts.uglify
-              ast = jsp.parse txt
-              ast = pro.ast_mangle ast
-              ast = pro.ast_squeeze ast
-              txt = pro.gen_code ast
-
-            # Save to file. Make new directory, if necessary.
-            path = @jpath.substr 0, @jpath.lastIndexOf '/'
-            file.stat path, (err, stat) =>
-              save = =>
-                file.writeFile @jpath, txt, =>
-                  @log '(re)compile complete'
-                  cb()
-              if not err and stat.isDirectory() then save()
-              else file.mkdir path, 0o777, save
-          
-          # Continue on errors.
+            @doCompile cdata,cb
           catch err
+            # Continue on errors.
             @log 'an error occurred while compiling the file: ' + err.message
             cb()
+    doCompile: (cdata,cb) ->
+      # Attempt to compile to Javascript.
+      txt = coffee.compile cdata.toString()
+      # Ugligfy, if enabled.
+      if opts.uglify
+        ast = jsp.parse txt
+        ast = pro.ast_mangle ast
+        ast = pro.ast_squeeze ast
+        txt = pro.gen_code ast
+      # Save to file. Make new directory, if necessary.
+      @save txt,cb
+    save: (txt,cb) ->
+      path = @jpath.substr 0, @jpath.lastIndexOf '/'
+      file.stat path, (err, stat) =>
+        save = =>
+          file.writeFile @jpath, txt, =>
+            @log '(re)compile complete'
+            cb()
+        if not err and stat.isDirectory() then save()
+        else file.mkdir path, 0o777, save
+          
+
 
   # Return the middleware
   (req, res, next) ->
