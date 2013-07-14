@@ -3,7 +3,7 @@ file = require 'fs'
 uglify = require 'uglify-js'
 chainer = require 'chainer'
 lager = require 'lager'
-log = new lager 'express-coffee'
+log = new lager('express-coffee')
 require 'colors'
 
 # Get parser and uglifier
@@ -27,13 +27,14 @@ module.exports = (opts, coffee) ->
       @log 'compiler invoked'
 
       # Determine coffeescript path.
-      @cpath = @jpath.replace('/javascripts', '/coffeescripts').replace(/\.js$/, '.coffee')
+      @cpath = @jpath.replace('/javascripts', '/coffeescripts')
+                     .replace(/\.js$/, '.coffee')
     
-    time: (time) -> (new Date time.mtime).getTime()
+    time: (time) -> (new Date(time.mtime)).getTime()
     
     needsCompile: (cb) ->
       @log 'checking if file needs (re)compiling'
-      chain = new chainer
+      chain = new chainer()
       stats = {}
       errs = {}
 
@@ -96,7 +97,8 @@ module.exports = (opts, coffee) ->
   # Return the middleware
   (req, res, next) ->
     # Ignore URLs that don't start in /javascripts and end in .js.
-    if not (/^\/javascripts/.test(req.url) and /\.js$/.test(req.url)) then return next()
+    if not (/^\/javascripts/.test(req.url) and /\.js$/.test(req.url))
+       return next()
 
     # Run the compiler.
     compiler = new Compiler opts.path + req.url
